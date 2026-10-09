@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2966750739439028892}
   - component: {fileID: 8031637485679984109}
+  - component: {fileID: 4500000000000000004}
   m_Layer: 0
   m_Name: PT_Fruit_Tree_01_pears
   m_TagString: Untagged
@@ -62,6 +63,28 @@ LODGroup:
     renderers:
     - renderer: {fileID: 8580298009914301585}
   m_Enabled: 1
+--- !u!136 &4500000000000000004
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2479184009378418726}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  m_Radius: 0.24
+  m_Height: 4.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 2.4, z: 0}
 --- !u!1 &2613454675235345673
 GameObject:
   m_ObjectHideFlags: 0

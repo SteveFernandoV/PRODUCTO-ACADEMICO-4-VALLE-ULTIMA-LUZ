@@ -352,6 +352,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyChaser
   target: {fileID: 0}
   moveSpeed: 3.8
+  detectionRange: 15
+  patrolRadius: 7
+  patrolPointCount: 4
+  waypointReachDistance: 0.65
   catchDistance: 1.05
 --- !u!1 &4104699261584100712
 GameObject:

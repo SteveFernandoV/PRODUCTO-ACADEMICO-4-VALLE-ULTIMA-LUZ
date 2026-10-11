@@ -5,9 +5,13 @@ using System.Collections.Generic;
 // Original procedural sounds: no external asset or licence is needed.
 public sealed class PA3GameAudio : MonoBehaviour
 {
+    static readonly float[] VictoryMelody = { 523.25f, 659.25f, 783.99f, 1046.5f, 783.99f, 880f, 987.77f, 1046.5f,
+        987.77f, 783.99f, 659.25f, 783.99f, 880f, 1046.5f, 1318.51f, 1046.5f,
+        783.99f, 659.25f, 523.25f, 659.25f, 783.99f, 987.77f, 1046.5f, 1318.51f,
+        1174.66f, 1046.5f, 987.77f, 783.99f, 880f, 987.77f, 1046.5f, 783.99f };
     static PA3GameAudio instance;
-    AudioClip footstep, crystal, atmosphere, guardianVoice;
-    AudioSource effects, crystalEffects, ambience;
+    AudioClip footstep, crystal, atmosphere, guardianVoice, victory;
+    AudioSource effects, crystalEffects, ambience, victorySource;
     readonly List<AudioSource> guardianSources = new List<AudioSource>();
     CharacterController player;
     float nextStep;
@@ -25,7 +29,7 @@ public sealed class PA3GameAudio : MonoBehaviour
 
     static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name != "PA3_VerticalSlice" && scene.name != "SEGUNDO NIVEL") return;
+        if (scene.name != "PA3_VerticalSlice" && scene.name != "SEGUNDO NIVEL" && scene.name != "TERCER NIVEL") return;
         if (instance != null) return;
         var audioObject = new GameObject("PA3_GameAudio");
         instance = audioObject.AddComponent<PA3GameAudio>();
@@ -52,6 +56,12 @@ public sealed class PA3GameAudio : MonoBehaviour
         ambience.spatialBlend = 0f;
         ambience.volume = 0.34f;
         ambience.Play();
+
+        victorySource = gameObject.AddComponent<AudioSource>();
+        victorySource.playOnAwake = false;
+        victorySource.spatialBlend = 0f;
+        victorySource.loop = true;
+        victorySource.volume = 0.78f;
     }
 
     void OnDestroy()
@@ -65,6 +75,7 @@ public sealed class PA3GameAudio : MonoBehaviour
         if (crystal == null) crystal = MakeClip("Cristal recogido", 0.9f, CrystalSample);
         if (atmosphere == null) atmosphere = MakeClip("Ambiente bosque oscuro", 8f, AtmosphereSample);
         if (guardianVoice == null) guardianVoice = MakeClip("Susurro del guardian", 6f, GuardianSample);
+        if (victory == null) victory = MakeClip("Victoria alegre", 8f, VictorySample);
         if (ambience != null && ambience.clip != atmosphere)
         {
             ambience.clip = atmosphere;
@@ -139,6 +150,24 @@ public sealed class PA3GameAudio : MonoBehaviour
             instance.crystalEffects.PlayOneShot(instance.crystal, 1f);
     }
 
+    public static void PlayVictoryMusic()
+    {
+        if (instance == null)
+        {
+            GameObject audioObject = new GameObject("PA3_GameAudio");
+            instance = audioObject.AddComponent<PA3GameAudio>();
+        }
+        instance.EnsureClips();
+        if (instance.ambience != null) instance.ambience.Stop();
+        if (instance.victorySource == null)
+            instance.victorySource = instance.gameObject.AddComponent<AudioSource>();
+        instance.victorySource.clip = instance.victory;
+        instance.victorySource.loop = true;
+        instance.victorySource.spatialBlend = 0f;
+        instance.victorySource.volume = 0.78f;
+        instance.victorySource.Play();
+    }
+
     static AudioClip MakeClip(string name, float seconds, System.Func<float, float> sample)
     {
         const int rate = 22050;
@@ -207,5 +236,20 @@ public sealed class PA3GameAudio : MonoBehaviour
         float wind = 0.055f * Mathf.Sin(2f * Mathf.PI * 0.42f * t) *
                      Mathf.Sin(2f * Mathf.PI * 317f * t);
         return fade * (drone + wind);
+    }
+
+    static float VictorySample(float t)
+    {
+        // Original bright chime melody over a soft major chord progression.
+        const float noteLength = 0.25f;
+        int noteIndex = Mathf.FloorToInt(t / noteLength) % 32;
+        float noteTime = t % noteLength;
+        float envelope = Mathf.Exp(-8f * noteTime);
+        float chime = Mathf.Sin(2f * Mathf.PI * VictoryMelody[noteIndex] * noteTime) * envelope * 0.34f;
+        float chordPhase = 2f * Mathf.PI * t;
+        float chord = 0.09f * (Mathf.Sin(chordPhase * 130.81f) +
+                               Mathf.Sin(chordPhase * 164.81f) +
+                               Mathf.Sin(chordPhase * 196f));
+        return chime + chord;
     }
 }

@@ -359,7 +359,11 @@ public sealed class PA3GameManager : MonoBehaviour
 
     void ShowLevelTransition()
     {
-        bool hasNextLevel = SceneManager.GetActiveScene().name == PA3MenuController.GameplaySceneName;
+        string currentScene = SceneManager.GetActiveScene().name;
+        bool fromFirstLevel = currentScene == PA3MenuController.GameplaySceneName;
+        bool fromSecondLevel = currentScene == "SEGUNDO NIVEL";
+        bool hasNextLevel = fromFirstLevel || fromSecondLevel;
+        string nextLevelLabel = fromFirstLevel ? "IR AL NIVEL 2" : "IR AL NIVEL 3";
         EnsureTransitionButtonInput();
         Canvas canvas = Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
@@ -393,17 +397,20 @@ public sealed class PA3GameManager : MonoBehaviour
         string title = hasNextLevel ? "¡NIVEL COMPLETADO!" : "¡JUEGO COMPLETADO!";
         string message = hasNextLevel
             ? "Recuperaste los cristales. El siguiente nivel ya está disponible."
-            : "Recuperaste los cristales y restauraste el valle.";
+            : "¡Recuperaste los seis cristales y completaste la aventura!";
         CreateMapText("Resultado", card.transform, title, 24, new Color(0.67f, 1f, 0.9f),
             new Vector2(0f, -34f), new Vector2(450f, 46f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
         CreateMapText("Mensaje", card.transform, message, 16, Color.white,
             new Vector2(0f, -98f), new Vector2(420f, 54f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
 
         if (hasNextLevel)
-            CreateTransitionButton(card.transform, "Siguiente nivel", "IR AL NIVEL 2", new Vector2(0f, -178f), LoadNextLevel);
+            CreateTransitionButton(card.transform, "Siguiente nivel", nextLevelLabel, new Vector2(0f, -178f), LoadNextLevel);
         else
+        {
+            PA3GameAudio.PlayVictoryMusic();
             CreateTransitionButton(card.transform, "Volver al menú", "VOLVER AL MENÚ", new Vector2(0f, -178f),
-                () => PA3MenuController.ReturnToMainMenu("¡Juego completado! Recuperaste los cristales y restauraste el valle."));
+                () => PA3MenuController.ReturnToMainMenu("¡Juego completado! Recuperaste los seis cristales y salvaste el valle."));
+        }
 
         if (hasNextLevel)
             CreateTransitionButton(card.transform, "Menú principal", "MENÚ PRINCIPAL", new Vector2(0f, -240f),
@@ -413,7 +420,10 @@ public sealed class PA3GameManager : MonoBehaviour
     void LoadNextLevel()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("SEGUNDO NIVEL");
+        string currentScene = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(currentScene == PA3MenuController.GameplaySceneName
+            ? "SEGUNDO NIVEL"
+            : "TERCER NIVEL");
     }
 
     static void EnsureTransitionButtonInput()

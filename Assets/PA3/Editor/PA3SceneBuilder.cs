@@ -22,6 +22,8 @@ public static class PA3SceneBuilder
     const string Root = "Assets/PA3";
     const string ScenePath = "Assets/Scenes/PA3_VerticalSlice.unity";
     const string MenuScenePath = "Assets/Scenes/PA3_MainMenu.unity";
+    const string SecondLevelScenePath = "Assets/Scenes/SEGUNDO NIVEL.unity";
+    const string ThirdLevelScenePath = "Assets/Scenes/TERCER NIVEL.unity";
     const string OldMotesPrefabPath = Root + "/Prefabs/EnergyMistVFX.prefab";
     const string MotesPrefabPath = Root + "/Prefabs/CrystalMotesVFX.prefab";
     const string NaturePackage = @"C:\Users\fer10\AppData\Roaming\Unity\Asset Store-5.x\Polytope Studio\3D ModelsEnvironments\Low Poly Environment - Nature Free - LOWPOLY MEDIEVAL FANTASY SERIES.unitypackage";
@@ -215,11 +217,19 @@ public static class PA3SceneBuilder
 
     static void ApplyPa3BuildSettings()
     {
-        EditorBuildSettings.scenes = new[]
+        EditorBuildSettingsScene[] existingScenes = EditorBuildSettings.scenes;
+        var scenes = new List<EditorBuildSettingsScene>
         {
             new EditorBuildSettingsScene(MenuScenePath, true),
             new EditorBuildSettingsScene(ScenePath, true)
         };
+        foreach (string laterLevel in new[] { SecondLevelScenePath, ThirdLevelScenePath })
+        {
+            EditorBuildSettingsScene existing = existingScenes.FirstOrDefault(scene => scene.path == laterLevel);
+            scenes.Add(existing ?? new EditorBuildSettingsScene(laterLevel, true));
+        }
+        scenes.AddRange(existingScenes.Where(scene => !scenes.Any(required => required.path == scene.path)));
+        EditorBuildSettings.scenes = scenes.ToArray();
     }
 
     static void BuildMainMenuScene()
@@ -502,7 +512,13 @@ public static class PA3SceneBuilder
 
         EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
         if (AssetDatabase.LoadAssetAtPath<SceneAsset>(MenuScenePath) != null) ApplyPa3BuildSettings();
-        else EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+        else
+        {
+            EditorBuildSettingsScene[] additionalScenes = EditorBuildSettings.scenes
+                .Where(scene => scene.path != ScenePath).ToArray();
+            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) }
+                .Concat(additionalScenes).ToArray();
+        }
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         if (save) Debug.Log("PA3_BUILD_OK: vertical slice created at " + ScenePath);

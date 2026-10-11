@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
 public sealed class PA3GameManager : MonoBehaviour
@@ -358,6 +360,7 @@ public sealed class PA3GameManager : MonoBehaviour
     void ShowLevelTransition()
     {
         bool hasNextLevel = SceneManager.GetActiveScene().name == PA3MenuController.GameplaySceneName;
+        EnsureTransitionButtonInput();
         Canvas canvas = Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
         {
@@ -411,6 +414,17 @@ public sealed class PA3GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("SEGUNDO NIVEL");
+    }
+
+    static void EnsureTransitionButtonInput()
+    {
+        EventSystem eventSystem = Object.FindAnyObjectByType<EventSystem>();
+        if (eventSystem == null)
+            eventSystem = new GameObject("EventSystem", typeof(EventSystem)).GetComponent<EventSystem>();
+
+        if (eventSystem.GetComponent<BaseInputModule>() != null) return;
+        InputSystemUIInputModule inputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
+        inputModule.AssignDefaultActions();
     }
 
     static void CreateTransitionButton(Transform parent, string objectName, string label,

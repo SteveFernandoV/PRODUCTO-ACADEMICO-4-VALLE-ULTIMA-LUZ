@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 // Original procedural sounds: no external asset or licence is needed.
 public sealed class PA3GameAudio : MonoBehaviour
@@ -7,7 +8,7 @@ public sealed class PA3GameAudio : MonoBehaviour
     static PA3GameAudio instance;
     AudioClip footstep, crystal, atmosphere, guardianVoice;
     AudioSource effects, crystalEffects, ambience;
-    AudioSource guardianSource;
+    readonly List<AudioSource> guardianSources = new List<AudioSource>();
     CharacterController player;
     float nextStep;
     float nextGuardianSearch;
@@ -24,7 +25,7 @@ public sealed class PA3GameAudio : MonoBehaviour
 
     static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name != "PA3_VerticalSlice") return;
+        if (scene.name != "PA3_VerticalSlice" && scene.name != "SEGUNDO NIVEL") return;
         if (instance != null) return;
         var audioObject = new GameObject("PA3_GameAudio");
         instance = audioObject.AddComponent<PA3GameAudio>();
@@ -49,7 +50,7 @@ public sealed class PA3GameAudio : MonoBehaviour
         ambience.clip = atmosphere;
         ambience.loop = true;
         ambience.spatialBlend = 0f;
-        ambience.volume = 0.22f;
+        ambience.volume = 0.34f;
         ambience.Play();
     }
 
@@ -69,17 +70,18 @@ public sealed class PA3GameAudio : MonoBehaviour
             ambience.clip = atmosphere;
             ambience.Play();
         }
-        if (guardianSource != null && guardianSource.clip != guardianVoice)
-        {
-            guardianSource.clip = guardianVoice;
-            guardianSource.Play();
-        }
+        foreach (AudioSource source in guardianSources)
+            if (source != null && source.clip != guardianVoice)
+            {
+                source.clip = guardianVoice;
+                source.Play();
+            }
     }
 
     void LateUpdate()
     {
         EnsureClips();
-        AttachGuardianSound();
+        AttachGuardianSounds();
         if (player == null)
         {
             var character = GameObject.FindGameObjectWithTag("Player");
@@ -98,27 +100,31 @@ public sealed class PA3GameAudio : MonoBehaviour
         nextStep = Time.time + Mathf.Clamp(2.2f / speed, 0.27f, 0.52f);
     }
 
-    void AttachGuardianSound()
+    void AttachGuardianSounds()
     {
-        if (guardianSource != null || Time.time < nextGuardianSearch) return;
+        if (Time.time < nextGuardianSearch) return;
         nextGuardianSearch = Time.time + 1f;
-        EnemyChaser guardian = Object.FindAnyObjectByType<EnemyChaser>();
-        if (guardian == null) return;
-        Transform existing = guardian.transform.Find("PA3_GuardianVoice");
-        GameObject voice = existing != null ? existing.gameObject : new GameObject("PA3_GuardianVoice");
-        voice.transform.SetParent(guardian.transform, false);
-        voice.transform.localPosition = new Vector3(0f, 1.5f, 0f);
-        guardianSource = voice.GetComponent<AudioSource>();
-        if (guardianSource == null) guardianSource = voice.AddComponent<AudioSource>();
-        guardianSource.clip = guardianVoice;
-        guardianSource.loop = true;
-        guardianSource.playOnAwake = false;
-        guardianSource.spatialBlend = 1f;
-        guardianSource.rolloffMode = AudioRolloffMode.Linear;
-        guardianSource.minDistance = 2f;
-        guardianSource.maxDistance = 18f;
-        guardianSource.volume = 0.9f;
-        guardianSource.Play();
+        EnemyChaser[] guardians = Object.FindObjectsByType<EnemyChaser>();
+        foreach (EnemyChaser guardian in guardians)
+        {
+            if (guardian == null) continue;
+            Transform existing = guardian.transform.Find("PA3_GuardianVoice");
+            GameObject voice = existing != null ? existing.gameObject : new GameObject("PA3_GuardianVoice");
+            voice.transform.SetParent(guardian.transform, false);
+            voice.transform.localPosition = new Vector3(0f, 1.5f, 0f);
+            AudioSource source = voice.GetComponent<AudioSource>();
+            if (source == null) source = voice.AddComponent<AudioSource>();
+            source.clip = guardianVoice;
+            source.loop = true;
+            source.playOnAwake = false;
+            source.spatialBlend = 1f;
+            source.rolloffMode = AudioRolloffMode.Linear;
+            source.minDistance = 2f;
+            source.maxDistance = 32f;
+            source.volume = 0.9f;
+            if (!source.isPlaying) source.Play();
+            if (!guardianSources.Contains(source)) guardianSources.Add(source);
+        }
     }
 
     public static void PlayCrystalPickup()

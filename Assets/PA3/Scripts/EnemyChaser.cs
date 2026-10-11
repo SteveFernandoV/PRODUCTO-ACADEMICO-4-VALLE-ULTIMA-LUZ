@@ -6,7 +6,7 @@ public sealed class EnemyChaser : MonoBehaviour
 	[Header("Comportamiento")]
     public Transform target;
     public float moveSpeed = 3.8f;
-	[Min(1f)] public float detectionRange = 10f;
+	[Min(1f)] public float detectionRange = 20f;
 	[Min(1f)] public float patrolRadius = 7f;
 	[Min(2)] public int patrolPointCount = 4;
 	[Min(0.1f)] public float waypointReachDistance = 0.65f;

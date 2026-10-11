@@ -85,6 +85,17 @@ public sealed class PA3GameManager : MonoBehaviour
             new Color(0.7f, 1f, 0.93f), Vector2.zero, new Vector2(108f, 28f),
             new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
 
+        GameObject cameraHint = new GameObject("Ayuda para cambiar cámara", typeof(RectTransform), typeof(Image));
+        cameraHint.transform.SetParent(canvas.transform, false);
+        RectTransform cameraHintRect = cameraHint.GetComponent<RectTransform>();
+        cameraHintRect.anchorMin = cameraHintRect.anchorMax = cameraHintRect.pivot = new Vector2(1f, 1f);
+        cameraHintRect.anchoredPosition = new Vector2(-24f, -60f);
+        cameraHintRect.sizeDelta = new Vector2(176f, 30f);
+        cameraHint.GetComponent<Image>().color = new Color(0.015f, 0.045f, 0.065f, 0.82f);
+        CreateMapText("Tecla de cámara", cameraHint.transform, "C  |  CAMBIAR VISTA", 12,
+            new Color(0.7f, 1f, 0.93f), Vector2.zero, new Vector2(170f, 28f),
+            new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+
         mapHeader = CreateMapText("Título", panel.transform, "MAPA DEL VALLE", 20,
             new Color(0.7f, 1f, 0.93f), new Vector2(0f, -12f), new Vector2(390f, 34f),
             new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));

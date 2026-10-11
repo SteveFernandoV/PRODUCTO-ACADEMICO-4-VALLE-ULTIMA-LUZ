@@ -1,0 +1,5 @@
+Animated Human Low Poly
+Autor: Quaternius
+Descarga de origen: https://opengameart.org/content/animated-human-low-poly
+Licencia: CC0 1.0 Universal (dominio público)
+Se utiliza el FBX con animaciones Idle y Walk para la apariencia del jugador.
